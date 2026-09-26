@@ -11,10 +11,10 @@ from duckduckgo_search import DDGS
 def execute_powershell(command: str) -> str:
     """Windows PowerShell'de herhangi bir komutu çalıştırır ve çıktısını döndürür. (Sistem kontrolü, ağ, dosya manipülasyonu için)"""
     try:
-        # Daha güvenilir ve geniş kapsamlı PowerShell yürütmesi
+        # errors='ignore' ekledik ki Türkçe veya geçersiz karakterlerde çökmesin
         res = subprocess.run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", command], 
-            capture_output=True, text=True, timeout=60, encoding='utf-8', errors='replace'
+            capture_output=True, text=True, timeout=60, encoding='utf-8', errors='ignore'
         )
         if res.returncode == 0:
             return res.stdout.strip() if res.stdout.strip() else "İşlem başarıyla tamamlandı (Çıktı yok)."
@@ -28,13 +28,16 @@ def execute_powershell(command: str) -> str:
 def execute_python_code(code: str) -> str:
     """Aria'nın çalışma anında karmaşık görevler için kendi Python kodunu yazıp (veri analizi, api çağrıları, algoritma) çalıştırmasını sağlar."""
     try:
-        # Geçici bir Python dosyası oluştur
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as temp_file:
+        # Geçici bir Python dosyası oluştur (errors='ignore' eklendi)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8', errors='ignore') as temp_file:
             temp_file.write(code)
             temp_filepath = temp_file.name
 
-        # Dosyayı çalıştır
-        res = subprocess.run([sys.executable, temp_filepath], capture_output=True, text=True, timeout=60, encoding='utf-8')
+        # Dosyayı çalıştır (errors='ignore' eklendi)
+        res = subprocess.run(
+            [sys.executable, temp_filepath], 
+            capture_output=True, text=True, timeout=60, encoding='utf-8', errors='ignore'
+        )
         
         # İşlem bitince sil
         os.remove(temp_filepath)
@@ -69,7 +72,7 @@ def write_to_file(filepath: str, content: str) -> str:
     """Belirtilen dosyaya içerik yazar (yoksa oluşturur, varsa üzerine yazar)."""
     try:
         os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, 'w', encoding='utf-8', errors='ignore') as f:
             f.write(content)
         return f"'{filepath}' dosyasına başarıyla yazıldı."
     except Exception as e:
